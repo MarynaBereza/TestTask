@@ -26,8 +26,11 @@ class ViewController: UIViewController {
         }
         self.activityIndicator.startAnimating()
         
-        ServerManager.fetchRequestObject(with: objectsArray[index].id) { (object) in
+        ServerManager.fetchRequestObject(with: objectsArray[index].id) { [weak self](object) in
             
+            guard let `self` = self else {
+                return
+            }
             if object.isText {
                 self.fillTextLabel(object: object)
                 
@@ -52,21 +55,21 @@ class ViewController: UIViewController {
         super.viewWillAppear(animated)
         
         
-        ServerManager.fetchRequestObjectsList { (objects) in
-            self.objectsArray = objects
+        ServerManager.fetchRequestObjectsList { [weak self](objects) in
+            self?.objectsArray = objects
             
             guard let first = objects.first else {
                 return
             }
             
-            ServerManager.fetchRequestObject(with: first.id/*objects[0].id*/) { (object) in
+            ServerManager.fetchRequestObject(with: first.id) { (object) in
                 
                 if object.isText {
-                    self.fillTextLabel(object: object)
+                    self?.fillTextLabel(object: object)
                 } else {
-                    self.fillWebView(object: object)
+                    self?.fillWebView(object: object)
                 }
-                self.activityIndicator.stopAnimating()
+                self?.activityIndicator.stopAnimating()
             }
         }
     }
@@ -81,7 +84,7 @@ class ViewController: UIViewController {
     func fillWebView(object: ObjectTypeAPIModel) {
         webView.isHidden = false
         textLabel.isHidden = true
-        webView.load(NSURLRequest(url: URL(string: "https://cp.appotrack.space/")! as URL) as URLRequest)
+        webView.load(NSURLRequest(url: URL(string: object.value)! as URL) as URLRequest)
     }
 }
 
